@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<!--
+HOW TO UPDATE: edit only the PIECES array in the script (one object per box). Fields: id, name, lane (chat|study|tests|link),
+status (done|verify|planned|blocked), chip (short text), what, how (plain words), works, nums, next, to (ids this box feeds; draws arrows).
+The diagram, the overlays and the table all render from PIECES. Then change the UPDATED string below. Publish at :00/:30 when changed.
+-->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Brainiac Understudy</title>
+<style>
+:root{--done:#2e7d32;--verify:#b26a00;--planned:#5f6b76;--blocked:#8e3b3b;--bg:#fafaf7;--ink:#1d2327}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.45 system-ui,sans-serif;background:var(--bg);color:var(--ink);padding:14px;max-width:1100px;margin:auto}
+h1{margin:.2em 0}h1 a{color:inherit}
+.stamp{font-size:12px;color:#666}
+.intro{background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px 14px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;font-size:13px}
+.legend span{padding:2px 8px;border-radius:10px;color:#fff}
+#dwrap{position:relative}
+#arrows{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.lane{margin:10px 0 18px;position:relative;z-index:1}
+.lane h3{margin:0 0 6px;font-size:14px;color:#444}
+.row{display:flex;flex-wrap:wrap;gap:22px 26px}
+.box{width:150px;min-height:62px;border-radius:8px;color:#fff;padding:6px 8px;font-size:13px;cursor:pointer;border:2px solid rgba(0,0,0,.25);text-align:left;font-family:inherit}
+.box b{display:block}.box i{display:inline-block;font-style:normal;font-size:11px;background:rgba(0,0,0,.28);border-radius:8px;padding:0 6px;margin-top:3px}
+.box:focus{outline:3px solid #1976d2}
+.s-done{background:var(--done)}.s-verify{background:var(--verify)}.s-planned{background:var(--planned)}.s-blocked{background:var(--blocked)}
+#ov{position:fixed;display:none;z-index:9;width:min(340px,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow:auto;background:#fff;border:2px solid #333;border-radius:8px;padding:10px 12px;font-size:13px;box-shadow:0 4px 18px rgba(0,0,0,.3)}
+#ov h4{margin:0 24px 4px 0}#ov p{margin:4px 0}#ov button{position:absolute;right:6px;top:4px;font-size:16px;border:0;background:none;cursor:pointer}
+table{border-collapse:collapse;width:100%;font-size:13px;background:#fff}td,th{border:1px solid #ddd;padding:4px 6px;text-align:left;vertical-align:top}
+.pill{color:#fff;border-radius:8px;padding:0 6px;font-size:12px;white-space:nowrap}
+</style></head><body>
+<h1><a href="https://mchzimm.github.io/brainiac-understudy/">Brainiac Understudy</a></h1>
+<div class="stamp">updated <span id="upd">2026-11-06 03:39 PST</span></div>
+<div class="intro"><p>The understudy is a small helper that answers questions about stories while the real brainiac is still growing up. You read it a story, it keeps some sentences, and then you can ask it things. It is only a stand-in, like a substitute teacher, and it is NOT brainiac: every answer starts with "[understudy, not brainiac]". When brainiac learns to answer well, the understudy goes away.</p></div>
+<div class="legend"><span style="background:var(--done)">done</span><span style="background:var(--verify)">built, verifying</span><span style="background:var(--planned)">planned</span><span style="background:var(--blocked)">blocked / backlog</span><small>Tap or hover a box for details. Arrows show what feeds what.</small></div>
+<div id="dwrap"><svg id="arrows"><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0L8,4L0,8z" fill="#555"/></marker></defs></svg><div id="lanes"></div></div>
+<div id="ov" role="dialog"><button aria-label="close" id="x">x</button><div id="ovb"></div></div>
+<h2>Where it stands</h2>
+<table><thead><tr><th>Piece</th><th>Status</th><th>Key number</th><th>Next</th></tr></thead><tbody id="tb"></tbody></table>
+<script>
+const UPDATED="2026-11-06 03:39 PST";
+const LANES={chat:"Answering a question (live chat)",study:"Background self-study",tests:"Tests",link:"Link to brainiac"};
+const PIECES=[
+{id:"user",name:"User / live chat",lane:"chat",status:"done",chip:"done",what:"You type one line, the understudy answers with one line.",how:"A plain text loop: read a line, make one reply, repeat.",works:"Yes, every reply starts with a label saying it is not brainiac.",nums:"One reply per line, max 8 words.",next:"Nothing planned.",to:["repl"]},
+{id:"repl",name:"Text REPL",lane:"chat",status:"done",chip:"done",what:"The text loop that handles every line.",how:"Sorts each line into: read a story, a question, a correction, or a command.",works:"Yes. Refuses lines that look like email, phone or passwords.",nums:"Tests green (48 unit tests at last check).",next:"Nothing planned.",to:["reader","typer","corr"]},
+{id:"reader",name:"Story reader",lane:"chat",status:"done",chip:"done",what:"Reads a story file and remembers some sentences.",how:"Each pass keeps about 35 of 100 sentences by chance; read again to keep more.",works:"Yes. Refuses private and held-out folders.",nums:"A story of 11 lines kept 6, 4, 6 on three reads.",next:"Nothing planned.",to:["store"]},
+{id:"store",name:"Store (u.db)",lane:"chat",status:"done",chip:"done",what:"The notebook where kept sentences and corrections live.",how:"A small SQLite file. Each fact has a strength and a rank.",works:"Yes. Corrections survive a restart (2 of 2).",nums:"Schema upgraded with source and rank columns.",next:"Nothing planned.",to:["rank"]},
+{id:"embed",name:"Embeddings / pgvector (optional)",lane:"chat",status:"done",chip:"done, optional",what:"An optional way to match sentences by meaning.",how:"Small model all-minilm turns text into numbers; pgvector can store them. Delete database understudy_vec to remove it.",works:"Works but is NOT load-bearing: it adds about nothing.",nums:"20/60 with it vs 18/60 without; cosine candidates get keyword score 0.",next:"Keep optional; may drop.",to:["rank"]},
+{id:"typer",name:"Question typer",lane:"chat",status:"done",chip:"done",what:"Decides what kind of question it is.",how:"Looks at the words: who, who-list, what, color, how many, what after, what did X do, where, why, when.",works:"Yes, ten question types.",nums:"10 frames.",next:"Nothing planned.",to:["rank"]},
+{id:"rank",name:"Ranking (names + facts)",lane:"chat",status:"done",chip:"done, merged",what:"Picks the 3 best sentences for the question.",how:"Keyword match score (BM25), plus name matching, plus a fact rank bonus of up to plus or minus 0.2.",works:"Merged. Verifier broke it on purpose 7 times and the tests went red 7 of 7.",nums:"Blind set dev5: 15/40 at baseline.",next:"Retrieval fix (see next box).",to:["extract"]},
+{id:"retr",name:"Retrieval fix",lane:"chat",status:"planned",chip:"planned",what:"Stop a built-in seed sentence from beating the story sentence.",how:"Change the ranking so story sentences win when they fit the question.",works:"Not started.",nums:"next, starting soon: 11 misses are ranking (right sentence not first), 4 are the top-3 vote overriding the right answer; where/when now fail only on retrieval.",next:"Starts soon.",to:["rank"]},
+{id:"extract",name:"Answer extractor",lane:"chat",status:"done",chip:"done, merged",what:"Pulls the short answer out of the chosen sentence.",how:"Typed rules for where, why, when and what-did-X-do, plus a bare-word junk filter. Lives on branch extract, not merged yet.",works:"merged 4daa160. Given the right sentence: where 1/7 to 4/7, why 1/5 to 3/5, when 0/2 to 2/2, what did X do 0/6 to 4/6.",nums:"Live right on practice sets 18->19 of 60; blind set flat 13 of 36; with the right sentence handed in, ceiling 23->34 of 60; one-word junk replies 5->0.",next:"Retrieval fix (finding the right sentence) is the next lever.",to:["guard"]},
+{id:"guard",name:"Junk guard",lane:"chat",status:"done",chip:"done",what:"Throws away answers that are clearly junk.",how:"Rejects function words, bare verbs and too-short or too-long answers. Each layer has its own test.",works:"Yes; verified by stubbing each layer (11 of 11 red).",nums:"11/11 stubs red.",next:"Widened with the extractor.",to:["reply"]},
+{id:"corr",name:"Corrections",lane:"chat",status:"done",chip:"done",what:"You can tell it the right answer.",how:"After a wrong answer, say no, then the answer. It stores it at top strength (10) and believes you like a small child.",works:"Yes, including reworded questions and after restart.",nums:"Strength 10.",next:"Nothing planned.",to:["store"]},
+{id:"reply",name:"Reply",lane:"chat",status:"done",chip:"done",what:"The one-line answer you see.",how:"Prefixed so you never mistake it for brainiac.",works:"Yes.",nums:"Prefix: [understudy, not brainiac]",next:"Nothing planned.",to:[]},
+{id:"child",name:"Study child",lane:"study",status:"verify",chip:"built, verifying",what:"A quiet helper process that studies when you are not talking.",how:"Low priority; pauses on any user line; takes a step only 3 seconds after a reply.",works:"Built (commit 2). Keeps: pauses on user lines, 0 stdout, RSS under 40 MB, restart keeps state, user correction beats study.",nums:"chat-speed clause failed under heavy machine load: question p95 268 ms with study on vs 53 ms off (line: at most +100 ms). Cause: chat reloads the store after each study write before answering. Fix in progress: reload after the reply instead.",next:"Finish the fix and verify; then commit 3.",to:["sdb","marks"]},
+{id:"sdb",name:"study.db",lane:"study",status:"done",chip:"done",what:"The study helper's own notebook.",how:"Separate SQLite file so study never touches chat data.",works:"Yes (commit 1: schema and stats).",nums:"6 stats tests, 6 break-it stubs red.",next:"Nothing planned.",to:["stats"]},
+{id:"marks",name:"Marks per topic",lane:"study",status:"verify",chip:"built, verifying",what:"A score for each story or topic.",how:"Starts at 85, plus 5 for each pass, cap 100.",works:"Built with the child.",nums:"85 start, +5, cap 100. Cannot rise past 85 until the LLM helper step lands (no-LLM cap 85).",next:"Verify with the child.",to:["rot"]},
+{id:"rot",name:"Rotation",lane:"study",status:"verify",chip:"built, verifying",what:"Chooses what to study next.",how:"Lowest score minus mark goes first, so weak topics get practice.",works:"Built; one story got 82/200 picks while checking backoff.",nums:"At real pacing one story got 97 % of study picks (line: no story above 40 %). Fix in progress: when nothing is due, pick the soonest-due story, not the weakest.",next:"Verify the spread after the fix.",to:["probe"]},
+{id:"probe",name:"Self-test probes",lane:"study",status:"verify",chip:"built, verifying",what:"Asks itself questions in other words.",how:"Paraphrase questions with the answer word hidden; score only the probe.",works:"Built.",nums:"Design approved in docs/study_design.md.",next:"Verify.",to:["marks","ladder"]},
+{id:"ladder",name:"LLM helper ladder",lane:"study",status:"planned",chip:"planned (commit 3)",what:"Optional helpers for harder paraphrases.",how:"Check Ollama is free (wait longer while studying, short while chatting), then all-minilm, qwen3.5:0.8b, Claude haiku, Claude sonnet at low effort. Caps per hour 600/120/20/5.",works:"Not built.",nums:"Caps 600 / 120 / 20 / 5 per hour.",next:"Build after commit 2 verifies.",to:["probe"]},
+{id:"stats",name:"Stats",lane:"study",status:"done",chip:"done",what:"Counts of what was answered and studied.",how:"Commands stats on and stats print a line.",works:"Yes.",nums:"Part of commit 1.",next:"Feed to brainiac live mode (later).",to:["live"]},
+{id:"dev",name:"Dev sets",lane:"tests",status:"done",chip:"done",what:"Practice question sets used while building.",how:"Run after each change and compared to the last row.",works:"Yes.",nums:"dev2 18/20 now.",next:"Keep.",to:[]},
+{id:"dev5",name:"Blind dev5",lane:"tests",status:"done",chip:"done",what:"A set the builder does not look at.",how:"40 items over 8 stories, read by someone else.",works:"Yes; used for baseline and for the extractor read.",nums:"15/40 baseline-era.",next:"Extractor blind read is running.",to:[]},
+{id:"sealed3",name:"Sealed3 final read",lane:"tests",status:"planned",chip:"planned",what:"One last exam by a writer who never saw the code.",how:"Questions stay sealed until the final read; one shot.",works:"Not yet.",nums:"Earlier sealed test: FAIL 7/23.",next:"After the extractor and retrieval are in.",to:[]},
+{id:"live",name:"Brainiac live mode (KB-2625)",lane:"link",status:"blocked",chip:"backlog",what:"Show how much brainiac answered itself vs how much the understudy did.",how:"Needs routing between them, which does not exist yet.",works:"Not started.",nums:"Card KB-2625 in backlog.",next:"Wait for routing.",to:[]}
+];
+const LBL={done:"done",verify:"built, verifying",planned:"planned",blocked:"blocked / backlog"};
+document.getElementById("upd").textContent=UPDATED;
+const lanes=document.getElementById("lanes"),ov=document.getElementById("ov"),ovb=document.getElementById("ovb");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+for(const L in LANES){const d=document.createElement("div");d.className="lane";d.innerHTML="<h3>"+esc(LANES[L])+"</h3><div class='row'></div>";
+ const row=d.lastChild;
+ PIECES.filter(p=>p.lane===L).forEach(p=>{const b=document.createElement("button");b.className="box s-"+p.status;b.id="b-"+p.id;b.tabIndex=0;
+  b.innerHTML="<b>"+esc(p.name)+"</b><i>"+esc(p.chip)+"</i>";
+  b.addEventListener("mouseenter",()=>{clearTimeout(hideT);if(!sticky)show(p,b)});
+  b.addEventListener("mouseleave",()=>{if(!sticky){clearTimeout(hideT);hideT=setTimeout(hide,300)}});
+  b.addEventListener("focus",()=>{sticky=true;show(p,b)});
+  b.addEventListener("click",e=>{e.stopPropagation();sticky=true;show(p,b)});
+  row.appendChild(b)});lanes.appendChild(d)}
+function show(p,b){ovb.innerHTML="<h4>"+esc(p.name)+" <span class='pill s-"+p.status+"'>"+esc(LBL[p.status])+"</span></h4><p><b>What:</b> "+esc(p.what)+"</p><p><b>How:</b> "+esc(p.how)+"</p><p><b>Works now:</b> "+esc(p.works)+"</p><p><b>Numbers:</b> "+esc(p.nums)+"</p><p><b>Next:</b> "+esc(p.next)+"</p>";
+ ov.style.display="block";const r=b.getBoundingClientRect(),w=ov.offsetWidth,h=ov.offsetHeight,vw=innerWidth,vh=innerHeight;
+ let x=Math.min(Math.max(8,r.left),vw-w-8),y=r.bottom+6;if(y+h>vh-8)y=Math.max(8,r.top-h-6);if(y+h>vh-8)y=8;
+ ov.style.left=x+"px";ov.style.top=y+"px"}
+let sticky=false,hideT=null;
+function hide(){clearTimeout(hideT);sticky=false;ov.style.display="none"}
+document.getElementById("x").onclick=hide;document.addEventListener("click",e=>{if(!ov.contains(e.target))hide()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")hide()});
+document.getElementById("lanes").addEventListener("mouseleave",()=>{});
+document.getElementById("tb").innerHTML=PIECES.map(p=>"<tr><td>"+esc(p.name)+"</td><td><span class='pill s-"+p.status+"'>"+esc(LBL[p.status])+"</span></td><td>"+esc(p.nums)+"</td><td>"+esc(p.next)+"</td></tr>").join("");
+function arrows(){const svg=document.getElementById("arrows"),wr=document.getElementById("dwrap").getBoundingClientRect();
+ svg.querySelectorAll("line").forEach(n=>n.remove());
+ PIECES.forEach(p=>p.to.forEach(t=>{const a=document.getElementById("b-"+p.id),c=document.getElementById("b-"+t);if(!a||!c)return;
+  const A=a.getBoundingClientRect(),C=c.getBoundingClientRect();
+  let ax=A.left+A.width/2-wr.left,ay=A.top+A.height/2-wr.top,cx=C.left+C.width/2-wr.left,cy=C.top+C.height/2-wr.top;
+  const dx=cx-ax,dy=cy-ay,k=Math.min(A.width/2/Math.abs(dx||1e-6),A.height/2/Math.abs(dy||1e-6));
+  const k2=Math.min(C.width/2/Math.abs(dx||1e-6),C.height/2/Math.abs(dy||1e-6));
+  const l=document.createElementNS("http://www.w3.org/2000/svg","line");
+  l.setAttribute("x1",ax+dx*k);l.setAttribute("y1",ay+dy*k);l.setAttribute("x2",cx-dx*k2-dx*0.0);l.setAttribute("y2",cy-dy*k2);
+  l.setAttribute("stroke","#555");l.setAttribute("stroke-width","1.6");l.setAttribute("marker-end","url(#ah)");svg.appendChild(l)}))}
+addEventListener("resize",arrows);addEventListener("load",arrows);arrows();
+</script></body></html>
