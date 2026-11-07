@@ -32,7 +32,7 @@ table{border-collapse:collapse;width:100%;font-size:13px;background:var(--surfac
 .pill{color:var(--chipink);border-radius:8px;padding:0 6px;font-size:12px;white-space:nowrap}
 </style></head><body>
 <h1><a href="https://mchzimm.github.io/brainiac-understudy/">Brainiac Understudy</a></h1>
-<div class="stamp">updated <span id="upd">2026-11-07 11:15 PST</span></div>
+<div class="stamp">updated <span id="upd">2026-11-07 11:54 PST</span></div>
 <div class="intro"><p>The understudy is a small helper that answers questions about stories while the real brainiac is still growing up. You read it a story, it keeps some sentences, and then you can ask it things. It is only a stand-in, like a substitute teacher, and it is NOT brainiac: every answer starts with "[understudy, not brainiac]". When brainiac learns to answer well, the understudy goes away.</p></div>
 <div class="legend"><span style="background:var(--done)">done</span><span style="background:var(--verify)">built, verifying</span><span style="background:var(--planned)">planned</span><span style="background:var(--blocked)">blocked / backlog</span><span style="background:#5b2c83">being worked on now</span><small>Tap or hover a box for details. Arrows show what feeds what.</small></div>
 <div id="dwrap"><svg id="arrows"><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0L8,4L0,8z"/></marker></defs></svg><div id="lanes"></div></div>
@@ -1581,6 +1581,10 @@ if(window.ResizeObserver){var ro=new ResizeObserver(later);roots.forEach(functio
 <li><b>So:</b> background self-study with a small local model alone does not work today. What works is the teacher answering at ask time for some question types.</li>
 <li><b>Honest note:</b> a check found that the control run sent 6 prompts with held-out story text to the local model (no outside call, numbers unchanged). It is being fixed before merge.</li>
 <li><b>Next:</b> a type-gated teacher answer path, read first with 1 vote instead of 5 (speed budget: 3 s per chat answer).</li>
+<li><b>tgate0: looked like +11 right answers.</b> Picking question types (after, where, who, why) where the small local model reading the whole story helps gave about +11. On the hard set this could not be read: it has none of those types.</li>
+<li><b>tgate1: not confirmed, type gate dropped.</b> Splitting by story instead showed the gain came from five old stories (one story gave 5 of 11), not from question type. Confirm side: net -3, and 23 % of right answers flipped to wrong. Random story splits pass only 50 %, against 36 % for a shuffled-answers sham, so it is close to a coin toss.</li>
+<li><b>idkfall0: no gain, both fail.</b> Let the small model answer only where the main reader says "I don't know". Only 6 of 166 questions are "I don't know" (easy set: 0), so the most it can add is +5 right. The "all five votes agree" rule has only 3 usable cases.</li>
+<li><b>Where the local route ends.</b> The local model route tops out near 125 of 166. The 85 % bar is 142. Reaching it needs Claude at answer time, which costs money and is the owner's call. Nothing started.</li>
 </ul></li>
 <li><b>Honesty rules.</b> It learns only from its own questions (test questions are never stored). The teacher never overwrites an answer the rules got right. Private sets are never sent to any model. No paid Claude calls.</li>
 <li><b>Levels.</b> Now 114 of 166 (69 %). Best known locally: 125 (75 %). Teacher alone with 5 votes: 128 (77 %), but with 19 right answers broken, so it needs the type gate.</li>
@@ -1592,7 +1596,7 @@ if(window.ResizeObserver){var ro=new ResizeObserver(later);roots.forEach(functio
 
 <table><thead><tr><th>Piece</th><th>Status</th><th>Key number</th><th>Next</th></tr></thead><tbody id="tb"></tbody></table>
 <script>
-const UPDATED="2026-11-07 11:15 PST";
+const UPDATED="2026-11-07 11:54 PST";
 const LANES={chat:"Answering a question (live chat)",study:"Background self-study",tests:"Tests",link:"Link to brainiac"};
 const PIECES=[
 {id:"user",name:"User / live chat",lane:"chat",status:"done",chip:"done",what:"You type one line, the understudy answers with one line.",how:"A plain text loop: read a line, make one reply, repeat.",works:"Yes, every reply starts with a label saying it is not brainiac.",nums:"One reply per line, max 8 words.",next:"Nothing planned.",to:["repl"]},
