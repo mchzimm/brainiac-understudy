@@ -32,7 +32,7 @@ table{border-collapse:collapse;width:100%;font-size:13px;background:var(--surfac
 .pill{color:var(--chipink);border-radius:8px;padding:0 6px;font-size:12px;white-space:nowrap}
 </style></head><body>
 <h1><a href="https://mchzimm.github.io/brainiac-understudy/">Brainiac Understudy</a></h1>
-<div class="stamp">updated <span id="upd">2026-11-10 15:34 PST</span></div>
+<div class="stamp">updated <span id="upd">2026-11-10 16:02 PST</span></div>
 <div class="intro"><p>The understudy is a small helper that answers questions about stories while the real brainiac is still growing up. You read it a story, it keeps some sentences, and then you can ask it things. It is only a stand-in, like a substitute teacher, and it is NOT brainiac: every answer starts with "[understudy, not brainiac]". When brainiac learns to answer well, the understudy goes away.</p></div>
 <div class="legend"><span style="background:var(--done)">done</span><span style="background:var(--verify)">built, verifying</span><span style="background:var(--planned)">planned</span><span style="background:var(--blocked)">blocked / backlog</span><span style="background:#5b2c83">being worked on now</span><small>Tap or hover a box for details. Arrows show what feeds what.</small></div>
 <div id="dwrap"><svg id="arrows"><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0L8,4L0,8z"/></marker></defs></svg><div id="lanes"></div></div>
@@ -1622,7 +1622,11 @@ if(window.ResizeObserver){var ro=new ResizeObserver(later);roots.forEach(functio
 <li><b>Story reading and story quiz on the live chat path: merged, off by default.</b> The plumbing that reads stories and quizzes on them during live chat was built and checked by someone other than the builder before merge.</li>
 <li><b>Result: the end-to-end check (KB-2665) ran, but the story quiz as built could not measure story learning.</b> After teaching, brainiac got 2 held story answers right on 2 items; the bar (+3) is not lowered, the measure is being replaced. The quiz asks all held questions in one batch with no story context, so a small gain only reflects saying common words more often. The chat grading path had also not really been exercised in that run (the fake chat grader never marks a reply wrong, so nothing was fed to the understudy). The Ornith checker worked on every call (20 of 20 first calls; 0 real Claude calls). Before teaching, brainiac scored 0 of 39 on every story set. The three chat switches stay off.</li>
 <li><b>KB-2707 done (PASS): the chat grading path now runs for real.</b> With the new switch (off by default), 45 of the brain's own live chat replies were graded and rewarded by the teacher. Held story items never reached the teacher (0 leaks). The switches stay off until the story quiz can measure learning.</li>
-<li><b>Next:</b> KB-2710, a new story quiz that gives the brain the story cue, with a fair control so it cannot cheat. KB-2711: the grader skips about 97 % of turns because too many grades are in flight; the fix is to sample.</li>
+<li><b>KB-2710 (new story quiz): tried, step 0 stopped, now blocked. Not a fail.</b> With a story cue, the brain's reply never reaches story words: 0 of 36 questions answered, on both a test net fed from the text and a copy of the real brain. The chat reply starts from the last words of the question, not from the story. The quiz waits for KB-2712.</li>
+<li><b>KB-2711 (grader skips about 97 % of turns): sized offline, ready.</b> 1904 turns were offered in 725 s and only 52 were graded. Grading takes about 20 s per turn against a measured 0.62 s warm median, a gap of about 30x that is still unexplained. The plan is to sample turns (switch off by default), not to raise the cap.</li>
+<li><b>KB-2712 (new, running): let the chat reply start from what it just heard.</b> The idea is a fading memory of recently heard cells that the reply can start from and rank by, learned and not coded. It is tested on a planted fixture against a sham that has the same ending words. The switch is off by default. Open cause kept separate: the who-questions have a ceiling, because only 3 of 12 answers have any memory cell on the real brain.</li>
+<li><b>Honest status:</b> nothing is turned on. The goal is not met until a valid story quiz clears its line.</li>
+<li><b>Next:</b> KB-2712 first, then KB-2710, then KB-2711.</li>
 <li><b>tgate0: looked like +11 right answers.</b> Picking question types (after, where, who, why) where the small local model reading the whole story helps gave about +11. On the hard set this could not be read: it has none of those types.</li>
 <li><b>tgate1: not confirmed, type gate dropped.</b> Splitting by story instead showed the gain came from five old stories (one story gave 5 of 11), not from question type. Confirm side: net -3, and 23 % of right answers flipped to wrong. Random story splits pass only 50 %, against 36 % for a shuffled-answers sham, so it is close to a coin toss.</li>
 <li><b>idkfall0: no gain, both fail.</b> Let the small model answer only where the main reader says "I don't know". Only 6 of 166 questions are "I don't know" (easy set: 0), so the most it can add is +5 right. The "all five votes agree" rule has only 3 usable cases.</li>
@@ -1641,7 +1645,7 @@ if(window.ResizeObserver){var ro=new ResizeObserver(later);roots.forEach(functio
 
 <table><thead><tr><th>Piece</th><th>Status</th><th>Key number</th><th>Next</th></tr></thead><tbody id="tb"></tbody></table>
 <script>
-const UPDATED="2026-11-10 15:34 PST";
+const UPDATED="2026-11-10 16:02 PST";
 const LANES={chat:"Answering a question (live chat)",study:"Background self-study",tests:"Tests",link:"Link to brainiac"};
 const PIECES=[
 {id:"user",name:"User / live chat",lane:"chat",status:"done",chip:"done",what:"You type one line, the understudy answers with one line.",how:"A plain text loop: read a line, make one reply, repeat.",works:"Yes, every reply starts with a label saying it is not brainiac.",nums:"One reply per line, max 8 words.",next:"Nothing planned.",to:["repl"]},
