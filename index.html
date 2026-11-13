@@ -32,7 +32,7 @@ table{border-collapse:collapse;width:100%;font-size:13px;background:var(--surfac
 .pill{color:var(--chipink);border-radius:8px;padding:0 6px;font-size:12px;white-space:nowrap}
 </style></head><body>
 <h1><a href="https://mchzimm.github.io/brainiac-understudy/">Brainiac Understudy</a></h1>
-<div class="stamp">updated <span id="upd">2026-11-13 08:05 PST</span></div>
+<div class="stamp">updated <span id="upd">2026-11-13 10:09 PST</span></div>
 <div class="intro"><p>The understudy is a small helper that answers questions about stories while the real brainiac is still growing up. You read it a story, it keeps some sentences, and then you can ask it things. It is only a stand-in, like a substitute teacher, and it is NOT brainiac: every answer starts with "[understudy, not brainiac]". When brainiac learns to answer well, the understudy goes away.</p></div>
 <div class="legend"><span style="background:var(--done)">done</span><span style="background:var(--verify)">built, verifying</span><span style="background:var(--planned)">planned</span><span style="background:var(--blocked)">blocked / backlog</span><span style="background:#5b2c83">being worked on now</span><small>Tap or hover a box for details. Arrows show what feeds what.</small></div>
 <div id="dwrap"><svg id="arrows"><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0L8,4L0,8z"/></marker></defs></svg><div id="lanes"></div></div>
@@ -1643,7 +1643,8 @@ if(window.ResizeObserver){var ro=new ResizeObserver(later);roots.forEach(functio
 <li><b>KB-2717 (does the brain answer in its own words): first part merged and checked separately.</b> After feeding the brain the same items with their teacher answers, its open answers could be read for 15 of 78 questions (12 of those were right). On items it was never fed, or not fed this way, it gave 0 of 78 readable answers. So the answer channel opens only for items it was fed. The story quiz is still not readable. Next: KB-2718 tests whether this carries over to stories the brain was never fed.</li>
 <li><b>KB-2785 (quiz numbers under review): 36 of the 39 held quiz stories (clause C5) had been told to the brain.</b> A changed environment path released their ids. So quiz (C5) numbers read on the live brain or its copies are under review. Earlier FAILs stand. No earlier PASS card rests on a contaminated quiz score. No quiz reads run until a fresh, never-fed held set exists (KB-2783).</li>
 <li><b>KB-2786 (guard fix): landed on local main.</b> The held guard now covers every held source, keeps a sticky list of every id ever held, and refuses to start on an unknown held-file layout. A compiled test read the real held set: 1345 ids, 4230 items. Each guard layer has its own test, shown red when that layer is removed. Release build ok. No score moved.</li>
-<li><b>Next:</b> KB-2787 (which question set the scorer uses when the environment path is repointed), then KB-2783 (a fresh never-fed held set).</li>
+<li><b>KB-2787 (scorer pin): landed on local main, not pushed.</b> The quiz scorer built its question set from the one environment-pointed file, so repointing it scored a different 39 ids (one file matched 39 of 39, another 11, another 0). Now the scored set is pinned (count 39 plus a hash). A different set, an id outside the held union, or a failed held-file load while pinned stops the server at start, with counts-only messages. An opt-out keeps the old behavior. Two separate agents verified it; stubs reddened exactly their own tests; release build ok. A first check found the real start-up wiring unpinned; fixed and re-checked. Going live needs the quiz file named in the environment. No score moved.</li>
+<li><b>Next:</b> KB-2783 (a fresh never-fed held set). Quiz (C5) reads stay paused until it exists. Goal not met.</li>
 <li><b>Next:</b> KB-2718 (transfer to never-fed stories); KB-2715 A/B read pending; KB-2710 waits behind KB-2714.</li>
 <li><b>tgate0: looked like +11 right answers.</b> Picking question types (after, where, who, why) where the small local model reading the whole story helps gave about +11. On the hard set this could not be read: it has none of those types.</li>
 <li><b>tgate1: not confirmed, type gate dropped.</b> Splitting by story instead showed the gain came from five old stories (one story gave 5 of 11), not from question type. Confirm side: net -3, and 23 % of right answers flipped to wrong. Random story splits pass only 50 %, against 36 % for a shuffled-answers sham, so it is close to a coin toss.</li>
@@ -1663,7 +1664,7 @@ if(window.ResizeObserver){var ro=new ResizeObserver(later);roots.forEach(functio
 
 <table><thead><tr><th>Piece</th><th>Status</th><th>Key number</th><th>Next</th></tr></thead><tbody id="tb"></tbody></table>
 <script>
-const UPDATED="2026-11-13 08:05 PST";
+const UPDATED="2026-11-13 10:09 PST";
 const LANES={chat:"Answering a question (live chat)",study:"Background self-study",tests:"Tests",link:"Link to brainiac"};
 const PIECES=[
 {id:"user",name:"User / live chat",lane:"chat",status:"done",chip:"done",what:"You type one line, the understudy answers with one line.",how:"A plain text loop: read a line, make one reply, repeat.",works:"Yes, every reply starts with a label saying it is not brainiac.",nums:"One reply per line, max 8 words.",next:"Nothing planned.",to:["repl"]},
