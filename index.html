@@ -32,7 +32,7 @@ table{border-collapse:collapse;width:100%;font-size:13px;background:var(--surfac
 .pill{color:var(--chipink);border-radius:8px;padding:0 6px;font-size:12px;white-space:nowrap}
 </style></head><body>
 <h1><a href="https://mchzimm.github.io/brainiac-understudy/">Brainiac Understudy</a></h1>
-<div class="stamp">updated <span id="upd">2026-11-15 06:27 PST</span></div>
+<div class="stamp">updated <span id="upd">2026-11-17 11:18 PST</span></div>
 <div class="intro"><p>The understudy is a small helper that answers questions about stories while the real brainiac is still growing up. You read it a story, it keeps some sentences, and then you can ask it things. It is only a stand-in, like a substitute teacher, and it is NOT brainiac: every answer starts with "[understudy, not brainiac]". When brainiac learns to answer well, the understudy goes away.</p></div>
 <div class="legend"><span style="background:var(--done)">done</span><span style="background:var(--verify)">built, verifying</span><span style="background:var(--planned)">planned</span><span style="background:var(--blocked)">blocked / backlog</span><span style="background:#5b2c83">being worked on now</span><small>Tap or hover a box for details. Arrows show what feeds what.</small></div>
 <div id="dwrap"><svg id="arrows"><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0L8,4L0,8z"/></marker></defs></svg><div id="lanes"></div></div>
@@ -1577,6 +1577,7 @@ if(window.ResizeObserver){var ro=new ResizeObserver(later);roots.forEach(functio
 <li><b>The 33 misses left:</b> 20 confident wrong answers, 7 where the right sentence was not in the prompt, 6 where it abstained. No single group is big enough to close the gap alone.</li>
 <li><b>What is next:</b> the score is now 139 of 166. The bar is 142, so we are 3 short. It was 133 before. We tried two free ways to find the last 3 with no Claude help. First, we looked at all 27 answers still wrong and tried 387 simple tricks. None fixed 3 without breaking others. Second, for 10 misses, the right answer was in the helper's top 5 guesses for 7 of them. We tried 234 ways to pick it, and none fixed 3 groups without harm. The best one gained only 1. So the free local path is closed. All 114 answers we already bought from Claude now replay for free. Only 6 paid answers are left under the cap of 250, and each one is worth about 0.18 points. That cannot close a gap of 3. Raising the cap above 250 is the one choice that needs your word.</li>
 <li><b>Local model Ornith-1.5-9B answers when Claude would abstain (done, 0 Claude calls):</b> 141 of 166 right (old stories 51, hard 47, easy 43), up from 139. The bar is 142, so it is 1 short. You ruled this a PASS WITH DISCLAIMER: the strict read (141 is under 142) stays on record. The new switch UNDERSTUDY_OMLX is off by default and nothing is merged yet.</li>
+<li><b>KB-3087: PASS (restated test, 160 questions), with caveats.</b> New rule: keep the floor answer when the paid reply holds a floor stem the kept span lacks. Score 139 and 140 on two reads against a bar of 136, harm at most 3 (your word). The original bar of 142 is NOT reached; the floor alone is 104. It is now on by default, but it covers ONLY the paid driver profile (haiku:low then opus:xhigh), not the default sonnet/low path. A donor-swap check read 104, the floor, so the gain is not a leak.</li>
 <li><b>Score ladder so far:</b> rules alone 106, shipped 117, Claude helping 125, fix 1 133, paid answers replayed 139, Ornith fallback 141. Bar 142.</li>
 <li><b>Teacher ceiling test (the teacher is shown the right story, so this is only an upper bound):</b> small model qwen3.5:2b gets 128 (53/37/38). Ornith 9B gets 133 (54/44/35); a rerun gave 131 (52/44/35). The big Ornith 35B-A3B 2-bit gets 1 of 166: its output was garbage, so the file or the support is broken. That says nothing about how good it would be as a teacher.</li>
 <li><b>Ornith as the reader instead of qwen:</b> did not pass. It fixed 0 answers and broke 2, and the best it could reach was 141.</li>
@@ -1682,7 +1683,7 @@ if(window.ResizeObserver){var ro=new ResizeObserver(later);roots.forEach(functio
 
 <table><thead><tr><th>Piece</th><th>Status</th><th>Key number</th><th>Next</th></tr></thead><tbody id="tb"></tbody></table>
 <script>
-const UPDATED="2026-11-15 06:27 PST";
+const UPDATED="2026-11-17 11:18 PST";
 const LANES={chat:"Answering a question (live chat)",study:"Background self-study",tests:"Tests",link:"Link to brainiac"};
 const PIECES=[
 {id:"user",name:"User / live chat",lane:"chat",status:"done",chip:"done",what:"You type one line, the understudy answers with one line.",how:"A plain text loop: read a line, make one reply, repeat.",works:"Yes, every reply starts with a label saying it is not brainiac.",nums:"One reply per line, max 8 words.",next:"Nothing planned.",to:["repl"]},
